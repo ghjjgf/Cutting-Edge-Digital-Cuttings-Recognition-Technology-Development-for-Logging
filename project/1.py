@@ -119,7 +119,7 @@ def plot_color_histogram(top_colors):
 
 
 if __name__ == '__main__':
-    model_path = 'model/color_classifier_knn.joblib'
+    model_path = "C:/Users/28162/Desktop/中石油课题/Cutting-Edge-Digital-Cuttings-Recognition-Technology-Development-for-Logging/project/model/color_classifier_knn.joblib"
     if os.path.exists(model_path):
         print("--- 正在加载已存在的模型 ---")
         knn_model = joblib.load(model_path)
@@ -133,7 +133,7 @@ if __name__ == '__main__':
 
     # 预测并显示结果
     if knn_model:
-        test_image_path = 'dataset/train/紫红色/2258.00-紫红色泥岩-孟76井-庆阳仪器-白光-小视野.webp'
+        test_image_path = "C:/Users/28162/Desktop/标注/灰白色中砂岩-20/1217.00-灰白色中砂岩-庆阳仪器-白光-小视野.webp"
         if os.path.exists(test_image_path):
             predicted_color, top_5_colors = predict_image_color(knn_model, test_image_path)
             if top_5_colors:
