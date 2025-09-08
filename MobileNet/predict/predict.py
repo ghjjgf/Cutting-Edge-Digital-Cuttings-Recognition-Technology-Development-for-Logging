@@ -6,7 +6,7 @@ from PIL import Image
 from torchvision import transforms
 import matplotlib.pyplot as plt
 
-from model_v3 import mobilenet_v3_small
+from MobileNet.model.utils.model_v3 import mobilenet_v3_small
 '''
 {
     "0": "深灰色泥岩",

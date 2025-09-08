@@ -6,7 +6,7 @@ from torchvision import transforms
 import matplotlib.pyplot as plt
 import pandas as pd  # 用于生成Excel表格
 
-from model_v3 import mobilenet_v3_small
+from MobileNet.model.utils.model_v3 import mobilenet_v3_small
 
 # 类别名称
 '''
