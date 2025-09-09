@@ -240,7 +240,7 @@ def update_name_in_dir(frame_save_path, cnt, curr_class):
         os.rename(old_path, new_path)
         print(f"已更新文件名: {old_path} -> {new_path}")
 
-def transition_layers(video_path, knn_model, MobileNetmodel, class_indict, device, frame_save_path="transition_frames"):
+def transition_layers(video_path, knn_model, MobileNetmodel, class_indict, device, frame_save_path):
     cap = cv2.VideoCapture(video_path)
     if not cap.isOpened():
         print("[错误] 视频打开失败")
@@ -252,7 +252,6 @@ def transition_layers(video_path, knn_model, MobileNetmodel, class_indict, devic
     cnt = 0
     prev_color_percentage = None
     transition_flag = False
-    update_name = False
     while cap.isOpened():
         ret, frame = cap.read()
         if not ret:
