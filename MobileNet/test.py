@@ -89,7 +89,14 @@ def predict_video_frames(video_path, model, class_indict, device):
 # KNN颜色分析
 def knn_color_predict(image, knn_model, n_clusters=8):
     try:
-        color_percentage = {}
+        color_percentage = {
+            "浅灰色": 0,
+            "灰白色": 0,
+            "深灰色": 0,
+            "灰绿色": 0,
+            "灰色": 0,
+            "紫红色": 0
+        }
 
         if isinstance(image, str):
             image = Image.open(image).convert("RGB")
@@ -103,13 +110,9 @@ def knn_color_predict(image, knn_model, n_clusters=8):
 
         # 模拟KNN推理与KMeans聚类中心
         predictions = knn_model.predict(kmeans.cluster_centers_)
-        print(f"predictions: {predictions}")
+        #print(f"predictions: {predictions}")
         # 统计每个类别的数量
         unique, counts = np.unique(predictions, return_counts=True)
-
-        # 计算每个类别的占比
-        total_count = len(predictions)
-        class_ratios = counts / total_count  # 类别占比 = 类别数量 / 总数
 
         # 获取颜色与类别对应的映射
         class_to_colors = {cls: [] for cls in unique}   
@@ -247,7 +250,7 @@ def transition_layers(video_path, knn_model, MobileNetmodel, class_indict, devic
         return []
     # 预测结果存储
     results = []
-    prev_class, prev_colors = None, None
+    prev_class= None
     frame_idx = 0
     cnt = 0
     prev_color_percentage = None
@@ -259,10 +262,10 @@ def transition_layers(video_path, knn_model, MobileNetmodel, class_indict, devic
         img = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
         # MobileNetV3 推理
         curr_class, _ = predict_single_image(img, MobileNetmodel, class_indict, device)
-        print(f"mobileinfer {frame_idx} -> {curr_class}")
+        #print(f"mobileinfer {frame_idx} -> {curr_class}")
         # kmeans 聚类推理
         curr_colors, color_ratio, color_percentage = knn_color_predict(img, knn_model, n_clusters=8)
-        print(f"\n最常见的类别是: {curr_colors}, 占比: {color_ratio:.4f}")
+        #print(f"\n主要类别是: {curr_colors}, 占比: {color_ratio:.4f}")
 
         # 根据颜色映射 更新curr_class
         updated_colors, updated_classes_color = update_curr_colors_and_class(curr_colors, curr_class)
@@ -271,7 +274,7 @@ def transition_layers(video_path, knn_model, MobileNetmodel, class_indict, devic
             print(f"MobileNetV3推理的主要岩性: {curr_class}, KNN推理的主要颜色: {curr_colors}, 该岩性主要百分含量: {color_ratio:.4f}\n")
         else:
             color_ratio = color_percentage[updated_classes_color]  # 以MobileNetV3的颜色为准
-            print(f"[警告两个模型推理的颜色不一致 其岩性主要百分含量已更新为MobileNet推理的] MobileNetV3推理的主要岩性: {curr_class}, KNN推理的主要颜色: {updated_classes_color}, 该岩性主要百分含量: {color_ratio:.4f}\n")
+            print(f"[警告两个模型推理的颜色不一致 更新为MobileNet推理的百分含量] MobileNetV3推理的主要岩性: {curr_class}, KNN推理的主要颜色: {updated_classes_color}, 该岩性主要百分含量: {color_ratio:.4f}\n")
         # 记录结果
         results.append((frame_idx, curr_class, color_ratio))
         # 检测到疑似过渡层的次数 达到10次以上且出现主要岩性变换后，且新主要岩性的百分含量不断上升，则判定为过渡层
@@ -312,7 +315,7 @@ if __name__ == "__main__":
     MobileNetmodel, knn_model, class_indict = load_model_and_classes(mobilenet_model_path, knn_model_path, class_map_path, device)
 
     if detect_type == "video":
-        transition_layers(video_path, knn_model, MobileNetmodel, class_indict, device)
+        transition_layers(video_path, knn_model, MobileNetmodel, class_indict, device, frame_save_path)
     elif detect_type == "image_folder":
         results = predict_images_in_folder(img_folder_path, MobileNetmodel, class_indict, device, frame_save_path)
         pd.DataFrame(results, columns=["图像名称", "岩性类别", "概率"]).to_excel("推理结果.xlsx", index=False)
