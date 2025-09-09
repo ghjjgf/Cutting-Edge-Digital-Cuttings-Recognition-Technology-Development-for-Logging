@@ -8,7 +8,7 @@ import torch.optim as optim
 from torchvision import transforms, datasets
 from tqdm import tqdm
 
-from MobileNet.model.utils.model_v2 import MobileNetV2
+from MobileNet.model.nets.model_v2 import MobileNetV2
 
 
 def main():

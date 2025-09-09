@@ -157,7 +157,7 @@ def process_video(video_path, model, n_clusters=8, interval_sec=0.5):
 # --- 主程序逻辑 ---
 
 if __name__ == '__main__':
-    model_path = 'model/color_classifier_knn.joblib'
+    model_path = "C:/Users/28162/Desktop/中石油课题/Cutting-Edge-Digital-Cuttings-Recognition-Technology-Development-for-Logging/project/model/color_classifier_knn.joblib"
     if os.path.exists(model_path):
         print("--- 正在加载已存在的模型 ---")
         knn_model = joblib.load(model_path)
@@ -171,7 +171,7 @@ if __name__ == '__main__':
 
     if knn_model:
         # 替换为你要检测的视频文件路径
-        video_file_path = '10_second_video.mp4'
+        video_file_path = "C:/Users/28162/Desktop/中石油课题/Cutting-Edge-Digital-Cuttings-Recognition-Technology-Development-for-Logging/MobileNet/cuttings_video/cuttings_test.mp4"
 
         # 调用视频处理函数
         process_video(video_file_path, knn_model, n_clusters=8, interval_sec=0.5)
