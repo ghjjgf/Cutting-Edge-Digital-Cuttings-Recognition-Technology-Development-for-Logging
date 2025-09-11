@@ -35,7 +35,7 @@ def load_model_and_classes(mobile_model_path, knn_model_path, class_map_path, de
     mobile_model.eval()
     with open(class_map_path, "r") as f:
         class_indict = json.load(f)
-    #print(class_indict)
+    print(class_indict)
     return mobile_model, knn_model, class_indict
 
 # 单张图像预测
@@ -110,17 +110,16 @@ def knn_color_predict(image, knn_model, n_clusters=8):
 
         # 模拟KNN推理与KMeans聚类中心
         predictions = knn_model.predict(kmeans.cluster_centers_)
-        #print(f"predictions: {predictions}")
-
+        print(f"predictions: {predictions}\n")
+        
         # 统计每个类别的数量
         unique, counts = np.unique(predictions, return_counts=True)
 
         # 获取颜色与类别对应的映射
         class_to_colors = {cls: [] for cls in unique}   
         for i, color in enumerate(kmeans.cluster_centers_):
-            #print(color)
             class_to_colors[predictions[i]].append(color.astype(int))
-        #print(f"class_to_colors init: {class_to_colors}")
+        print(f"class_to_colors init: {class_to_colors}\n")
 
         # 统计 top8 主色占比
         counts_pixels = np.bincount(kmeans.labels_)
@@ -132,7 +131,7 @@ def knn_color_predict(image, knn_model, n_clusters=8):
              "percentage": (counts_pixels[i] / total_pixels) * 100}
             for i in top_indices
         ]
-        #print(f"top_colors: {top_colors}")
+        print(f"top_colors: {top_colors}\n")
 
         # 遍历 class_to_colors 中的每个类别
         for color_name, color_arrays in class_to_colors.items():
@@ -153,11 +152,11 @@ def knn_color_predict(image, knn_model, n_clusters=8):
             color_percentage[color_name] = total_percentage
 
         # 输出类别与其对应的总占比
-        #print("类别与其对应的总占比:")
-        # for color_name, total_percentage in color_percentage.items():
-        #     print(f"类别 {color_name}: 总占比 {total_percentage:.4f}%")
+        print("类别与其对应的总占比:")
+        for color_name, total_percentage in color_percentage.items():
+            print(f"类别 {color_name}: 总占比 {total_percentage:.4f}%")
 
-        #print(f"color_percentage: {color_percentage}")
+        # print(f"color_percentage: {color_percentage}")
 
         # 输出占比最高的类别
         most_common = max(color_percentage, key=color_percentage.get)
@@ -168,50 +167,27 @@ def knn_color_predict(image, knn_model, n_clusters=8):
         print(f"[错误] KNN颜色分析失败: {e}")
         return None, []
 
-# 过渡层检测
-def detect_transition_layer(prev_cuttings_class, curr_cuttings_class, updated_classes_color, color_ratio, i, cnt, transition_flag):
 
+# 过渡层检测
+def detect_transition_layer(prev_class, curr_class, curr_colors, prev_color_percentage, color_percentage, cnt, transition_flag):
     # 检测到疑似过渡层的次数 达到5次以上且出现主要岩性变换后，且新主要岩性的百分含量不断上升，则判定为过渡层
-    if prev_cuttings_class is None or curr_cuttings_class is None or i < 1:
+    if prev_class is None or curr_class is None:
         return transition_flag, cnt
-    elif cnt >= 11 and transition_flag == True:
-        print(f"[确认过渡层] 岩性变化为{curr_cuttings_class}\n")
+    elif prev_class == curr_class and color_percentage[curr_colors] < prev_color_percentage[curr_colors]:
+        print(f"主要岩性 {curr_class} 百分含量下降")
         return transition_flag, cnt
-    elif cnt >= 5 and prev_cuttings_class != curr_cuttings_class:
-        cnt += 1
-        print(f"[疑似过渡层] 岩性变化 {prev_cuttings_class} -> {curr_cuttings_class}, transition_flag 调整为True\n")
+    elif prev_class == curr_class and color_percentage[curr_colors] > prev_color_percentage[curr_colors]:
+        print(f"主要岩性 {curr_class} 百分含量上升")
+        return transition_flag, cnt
+    elif cnt >= 5 and prev_class != curr_class:
+        print(f"[疑似过渡层] 岩性变化 {prev_class} -> {curr_class}")
         transition_flag = True
         return transition_flag, cnt
-    elif prev_cuttings_class == curr_cuttings_class and color_ratio[i] < color_ratio[i - 1]:
-        print(f"主要岩性 {curr_cuttings_class} 百分含量下降\n")
-        cnt += 1
-        return transition_flag, cnt
-    elif prev_cuttings_class == curr_cuttings_class and color_ratio[i] > color_ratio[i - 1]:
-        print(f"主要岩性 {curr_cuttings_class} 百分含量上升\n")
-        cnt += 1
+    elif cnt >= 10 and transition_flag == True:
+        print(f"[确认过渡层] 岩性变化为{curr_class}")
         return transition_flag, cnt
     else:
         return transition_flag, cnt
-# # 过渡层检测
-# def detect_transition_layer(prev_class, curr_class, curr_colors, prev_color_percentage, color_percentage, cnt, transition_flag):
-#     # 检测到疑似过渡层的次数 达到5次以上且出现主要岩性变换后，且新主要岩性的百分含量不断上升，则判定为过渡层
-#     if prev_class is None or curr_class is None:
-#         return transition_flag, cnt
-#     elif prev_class == curr_class and color_percentage[curr_colors] < prev_color_percentage[curr_colors]:
-#         print(f"主要岩性 {curr_class} 百分含量下降")
-#         return transition_flag, cnt
-#     elif prev_class == curr_class and color_percentage[curr_colors] > prev_color_percentage[curr_colors]:
-#         print(f"主要岩性 {curr_class} 百分含量上升")
-#         return transition_flag, cnt
-#     elif cnt >= 5 and prev_class != curr_class:
-#         print(f"[疑似过渡层] 岩性变化 {prev_class} -> {curr_class}")
-#         transition_flag = True
-#         return transition_flag, cnt
-#     elif cnt >= 10 and transition_flag == True:
-#         print(f"[确认过渡层] 岩性变化为{curr_class}")
-#         return transition_flag, cnt
-#     else:
-#         return transition_flag, cnt
 
 # 更新颜色与岩性映射
 def update_curr_colors_and_class(curr_colors, curr_class):
@@ -278,79 +254,46 @@ def transition_layers(video_path, knn_model, MobileNetmodel, class_indict, devic
     prev_class= None
     frame_idx = 0
     cnt = 0
-    cntdown = 0
-    cntup = 0
-    i = 1
     prev_color_percentage = None
     transition_flag = False
-    #while cap.isOpened():
-    while i != 14:
-        # ret, frame = cap.read()
-        # if not ret:
-        #     break
-        #img = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
+    while cap.isOpened():
+        ret, frame = cap.read()
+        if not ret:
+            break
+        img = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
         # MobileNetV3 推理
-        #curr_class, _ = predict_single_image(img, MobileNetmodel, class_indict, device)
+        curr_class, _ = predict_single_image(img, MobileNetmodel, class_indict, device)
         #print(f"mobileinfer {frame_idx} -> {curr_class}")
-        # kmeans 聚类推理
-        #curr_colors, color_ratio, color_percentage = knn_color_predict(img, knn_model, n_clusters=8)
-        #print(f"\n主要类别是: {curr_colors}, 占比: {color_ratio:.4f}")
-        # 根据颜色映射 更新curr_class
-        #updated_colors, updated_classes_color = update_curr_colors_and_class(curr_colors, curr_class)
-        
-        # 模拟过渡层的14帧数据
-        cuttings_class = ['Dark-gray-sandy-mudstone', 'Dark-gray-sandy-mudstone', 'Dark-gray-sandy-mudstone', 
-                          'Dark-gray-sandy-mudstone', 'Dark-gray-sandy-mudstone', 'Dark-gray-sandy-mudstone', 
-                          'Dark-gray-sandy-mudstone', 'Purple-red-mudstone', 'Purple-red-mudstone',
-                          'Purple-red-mudstone', 'Purple-red-mudstone', 'Purple-red-mudstone', 'Purple-red-mudstone', 'Purple-red-mudstone']
-        curr_class_colors = ['深灰色', '深灰色', '深灰色', '深灰色', '深灰色', '深灰色',
-                              '深灰色', '深灰色', '紫红色', '紫红色', '紫红色', '紫红色',
-                                '紫红色', '紫红色', '紫红色']
-        curr_colors = ['深灰色', '深灰色', '深灰色', '深灰色', '深灰色', '深灰色',
-                          '深灰色', '深灰色', '紫红色', '紫红色', '紫红色', '紫红色',
-                            '紫红色', '紫红色', '紫红色']
-        color_ratio = [0.85, 0.80, 0.78, 0.75, 0.70, 0.65, 0.64, 0.63, 0.64, 0.65, 0.70, 0.75, 0.80, 0.85, 0.90]
-        # 定义前后两帧的数据 为过渡层识别准备
-        curr_cuttings_class = cuttings_class[i]
-        prev_cuttings_class = cuttings_class[i-1] if i > 0 else None
-        updated_colors = curr_colors[i]
-        updated_classes_color = curr_class_colors[i]  
-        #color_percentage = {updated_classes_color: color_ratio[i]}
 
+        # kmeans 聚类推理
+        curr_colors, color_ratio, color_percentage = knn_color_predict(img, knn_model, n_clusters=8)
+        #print(f"\n主要类别是: {curr_colors}, 占比: {color_ratio:.4f}")
+
+        # 根据颜色映射 更新curr_class
+        updated_colors, updated_classes_color = update_curr_colors_and_class(curr_colors, curr_class)
         # 判断两种模型识别出的颜色是否一致
         if updated_colors == updated_classes_color:
-            print(f"MobileNetV3推理的主要岩性: {cuttings_class[i]}, KNN推理的主要颜色: {curr_colors[i]}, 该岩性主要百分含量: {color_ratio[i]:.4f}")
-
-        #else:
-            #color_ratio = color_percentage[updated_classes_color]  # 以MobileNetV3的颜色为准
-            #print(f"[警告两个模型推理的颜色不一致KNN推理的为{curr_colors} 更新为MobileNet推理岩性的百分含量] MobileNetV3推理的主要岩性: {curr_class}, KNN推理的主要颜色: {updated_classes_color}, 该岩性主要百分含量: {color_ratio:.4f}\n")
+            print(f"MobileNetV3推理的主要岩性: {curr_class}, KNN推理的主要颜色: {curr_colors}, 该岩性主要百分含量: {color_ratio:.4f}\n")
+        else:
+            color_ratio = color_percentage[updated_classes_color]  # 以MobileNetV3的颜色为准
+            print(f"[警告两个模型推理的颜色不一致 更新为MobileNet推理的百分含量] MobileNetV3推理的主要岩性: {curr_class}, KNN推理的主要颜色: {updated_classes_color}, 该岩性主要百分含量: {color_ratio:.4f}\n")
         # 记录结果
-        #results.append((frame_idx, curr_class, color_ratio))
+        results.append((frame_idx, curr_class, color_ratio))
         # 检测到疑似过渡层的次数 达到10次以上且出现主要岩性变换后，且新主要岩性的百分含量不断上升，则判定为过渡层
-        #transition_flag, cnt = detect_transition_layer(prev_class, curr_class, updated_classes_color, prev_color_percentage, color_percentage, cnt, transition_flag)
-        #transition_flag, cnt = detect_transition_layer(prev_cuttings_class, curr_cuttings_class, updated_classes_color, prev_color_percentage, color_percentage, cnt, transition_flag)
-        
-        transition_flag, cnt = detect_transition_layer(prev_cuttings_class, curr_cuttings_class, updated_classes_color, color_ratio, i, cnt, transition_flag)
-        #print(f"i 值为{i}")
-        #print(f"cnt 值为{cnt}")
-        #print(f"transition_flag 值为{transition_flag}")
-        if not transition_flag and cnt >= 5:
-            print(f"[疑似过渡层] 主要岩性百分含量下降，岩性百分含量下降{cnt}次\n")
-        elif transition_flag and cnt >= 11:
-            print(f"[确认过渡层] 新岩性百分含量上升达到5次,确定此前11次推理的岩层为过渡层, 即将更新过渡层所有岩性名称为 {curr_cuttings_class}\n")
-            cnt = 0
+        transition_flag, cnt = detect_transition_layer(prev_class, curr_class, updated_classes_color, prev_color_percentage, color_percentage, cnt, transition_flag)
+        if not transition_flag and cnt > 5:
+            print(f"主要岩性百分含量下降，疑似过渡层{cnt}次")
+        elif transition_flag and cnt <= 10:
+            print(f"[疑似过渡层] 检测到疑似过渡层{cnt}次 at frame {frame_idx}")
+        elif transition_flag and cnt >= 10:
+            print(f"[确认过渡层] 检测到过渡层 at frame {frame_idx}")
+            update_name_in_dir(frame_save_path, cnt, curr_class)
             transition_flag = False
-            # 更新文件夹中最近添加的cnt张图片的岩性名称为curr_class
-            #update_name_in_dir(frame_save_path, cnt, curr_cuttings_class)
-            #print(f"cnt值置零,值为{cnt}\n")
-        elif transition_flag and cnt >= 5:
-            cntup += 1
-            print(f"[疑似过渡层] 岩性转变，岩性百分含量上升{cntup}次\n")
-        #prev_class = curr_class
-        #prev_color_percentage = color_percentage
+            cnt = 0
+
+        prev_class = curr_class
+        prev_color_percentage = color_percentage
         frame_idx += 1
-        i += 1
-        waitkey = cv2.waitKey(1)
 
     cap.release()
     return results
@@ -364,7 +307,7 @@ if __name__ == "__main__":
     mobilenet_model_path = "C:/Users/28162/Desktop/中石油课题/Cutting-Edge-Digital-Cuttings-Recognition-Technology-Development-for-Logging/MobileNet/model/train/cuttings_MobileNetV3.pth"
     class_map_path = "C:/Users/28162/Desktop/中石油课题/Cutting-Edge-Digital-Cuttings-Recognition-Technology-Development-for-Logging/MobileNet/dataset/cuttings_classes.json"
     knn_model_path = "C:/Users/28162/Desktop/中石油课题/Cutting-Edge-Digital-Cuttings-Recognition-Technology-Development-for-Logging/project/model/color_classifier_knn.joblib"
-    video_path = "G:/下载文件/xwechat_files/wxid_x4k56to9diaq22_8d35/msg/video/2025-09/dc73ceea0d00ffb85008555284fe4fc6.mp4"
+    video_path = "C:/Users/28162/Desktop/中石油课题/Cutting-Edge-Digital-Cuttings-Recognition-Technology-Development-for-Logging/MobileNet/cuttings_video/cuttings_test.mp4"
     img_folder_path = "path_to_image_folder"
     image_path = "D:/计算机视觉学习/deep-learning-for-image-processing-master/data_set/cuttings/train/Light-gray-medium-sandstone/Light-gray-medium-sandstone_8.webp"
     frame_save_path = "C:/Users/28162/Desktop/中石油课题/Cutting-Edge-Digital-Cuttings-Recognition-Technology-Development-for-Logging/MobileNet/frame_save_dir" # 保存过渡层帧的文件夹
@@ -381,4 +324,3 @@ if __name__ == "__main__":
     elif detect_type == "image":
         label, prob = predict_single_image(image_path, MobileNetmodel, class_indict, device)
         print(f"{os.path.basename(image_path)} -> {label} ({prob:.3f})")
-
