@@ -1,0 +1,44 @@
+import pandas as pd
+from PIL import Image
+
+
+def get_pixel_data(image_path):
+    try:
+        img = Image.open(image_path)
+        width, height = img.size
+        pixels = img.load()
+        pixel_data = []
+        for y in range(height):
+            for x in range(width):
+                r, g, b = pixels[x, y][:3]
+                pixel_data.append({
+                    'X_Coordinate': x,
+                    'Y_Coordinate': y,
+                    'R_Value': r,
+                    'G_Value': g,
+                    'B_Value': b
+                })
+        return pixel_data
+    except Exception as e:
+        print(f"发生错误：{e}")
+        return None
+
+
+def save_to_csv(image_path, output_csv_path):
+    """将图像像素数据保存到 CSV 文件中。"""
+    print("正在提取像素数据...")
+    pixel_data = get_pixel_data(image_path)
+    if not pixel_data:
+        return
+
+    df = pd.DataFrame(pixel_data)
+
+    try:
+        print(f"正在保存数据到 '{output_csv_path}'...")
+        df.to_csv(output_csv_path, index=False)
+        print("成功保存到 CSV 文件！")
+    except Exception as e:
+        print(f"保存到 CSV 时发生错误：{e}")
+
+
+save_to_csv('dataset/train/紫红色/1031.00-紫红色泥岩-庆阳仪器-白光-小视野.webp', 'pixel_data.csv')
