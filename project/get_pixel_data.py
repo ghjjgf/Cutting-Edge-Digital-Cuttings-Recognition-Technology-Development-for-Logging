@@ -41,4 +41,4 @@ def save_to_csv(image_path, output_csv_path):
         print(f"保存到 CSV 时发生错误：{e}")
 
 
-save_to_csv('dataset/train/紫红色/1031.00-紫红色泥岩-庆阳仪器-白光-小视野.webp', 'pixel_data.csv')
+save_to_csv("C:\\Users\\28162\\Desktop\\中石油课题\\数据集\\数据测试图片\\zihong.webp", 'pixel_data.csv')
