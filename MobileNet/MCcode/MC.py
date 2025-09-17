@@ -64,9 +64,26 @@ def monte_carlo_crop(image_path, save_dir, num_crops=8, min_size=(640, 640), max
                     continue
                 break
 
-    print("所有裁剪完成！")
+    print(f"{os.path.basename(image_path)} 所有裁剪完成！")
+
+def crop_folder_images(input_folder, output_folder, num_crops=8, min_size=(640, 640), max_iou=0.25, save_as_webp=True):
+    """对文件夹内所有图片进行裁剪"""
+    exts = ('.jpg', '.jpeg', '.png', '.webp', '.bmp', '.tif', '.tiff')
+    os.makedirs(output_folder, exist_ok=True)
+    files = [f for f in os.listdir(input_folder) if f.lower().endswith(exts)]
+    for f in files:
+        image_path = os.path.join(input_folder, f)
+        monte_carlo_crop(
+            image_path, 
+            output_folder, 
+            num_crops=num_crops, 
+            min_size=min_size, 
+            max_iou=max_iou, 
+            save_as_webp=save_as_webp
+        )
 
 # 使用示例
-image_path = "C:/Users/28162/Desktop/中石油课题/Cutting-Edge-Digital-Cuttings-Recognition-Technology-Development-for-Logging/MobileNet/MCcode/Purple-red-mudstone_2.webp"
-save_dir = "C:/Users/28162/Desktop/中石油课题/Cutting-Edge-Digital-Cuttings-Recognition-Technology-Development-for-Logging/MobileNet/MCcode/MC_crop"
-monte_carlo_crop(image_path, save_dir, save_as_webp=True)
+if __name__ == "__main__":
+    input_folder = "C:/Users/28162/Desktop/中石油课题/Cutting-Edge-Digital-Cuttings-Recognition-Technology-Development-for-Logging/MobileNet/MCcode/your_input_folder"
+    output_folder = "C:/Users/28162/Desktop/中石油课题/Cutting-Edge-Digital-Cuttings-Recognition-Technology-Development-for-Logging/MobileNet/MCcode/MC_crop"
+    crop_folder_images(input_folder, output_folder, save_as_webp=True)
