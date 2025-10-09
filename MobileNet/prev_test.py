@@ -118,6 +118,7 @@ def knn_color_predict(image, knn_model, n_clusters=8):
         # 获取颜色与类别对应的映射
         class_to_colors = {cls: [] for cls in unique}   
         for i, color in enumerate(kmeans.cluster_centers_):
+            print(f"i: {i}, color: {color}, class: {predictions[i]}")
             class_to_colors[predictions[i]].append(color.astype(int))
         print(f"class_to_colors init: {class_to_colors}\n")
 
@@ -147,7 +148,7 @@ def knn_color_predict(image, knn_model, n_clusters=8):
                 for top_color in top_colors:
                     if color_tuple == top_color['rgb']:
                         total_percentage += top_color['percentage']
-
+            
             # 将每个类别及其总占比添加到 color_percentage 字典中
             color_percentage[color_name] = total_percentage
 

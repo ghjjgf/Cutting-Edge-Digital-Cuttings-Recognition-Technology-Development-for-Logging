@@ -31,6 +31,7 @@ def load_model_and_classes(mobile_model_path, knn_model_path, class_map_path, de
     knn_model = joblib.load(knn_model_path)
     if mobile_model and knn_model:
         print("--- 模型加载成功 ---")
+        
     mobile_model.load_state_dict(torch.load(mobile_model_path, map_location=device))
     mobile_model.eval()
     with open(class_map_path, "r") as f:

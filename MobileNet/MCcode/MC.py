@@ -84,6 +84,6 @@ def crop_folder_images(input_folder, output_folder, num_crops=8, min_size=(640, 
 
 # 使用示例
 if __name__ == "__main__":
-    input_folder = "C:/Users/28162/Desktop/中石油课题/Cutting-Edge-Digital-Cuttings-Recognition-Technology-Development-for-Logging/MobileNet/MCcode/your_input_folder"
-    output_folder = "C:/Users/28162/Desktop/中石油课题/Cutting-Edge-Digital-Cuttings-Recognition-Technology-Development-for-Logging/MobileNet/MCcode/MC_crop"
+    input_folder = "C:/Users/28162/Desktop/cuttings/train/images/灰绿色泥岩"
+    output_folder = "C:/Users/28162/Desktop/cuttings/MC_crop/灰绿色泥岩"
     crop_folder_images(input_folder, output_folder, save_as_webp=True)
