@@ -6,7 +6,7 @@
 from ast import arg
 from utils.main.RockCuttingsIdentificationSystem import RockCuttingsIdentificationSystem
 import os
-
+import time
 
 def single_image_example(image_path, model_path, confidence_threshold):
     """单张图像识别示例"""
@@ -16,6 +16,7 @@ def single_image_example(image_path, model_path, confidence_threshold):
     system = RockCuttingsIdentificationSystem(model_path, confidence_threshold)
     
     if os.path.exists(image_path):
+        start_time = time.time()
         result = system.identify_rock_cuttings(image_path)
         print(f"\n图像: {result.get('image_name', 'Unknown')}")
         print(f"状态: {result.get('status', 'Unknown')}")
@@ -42,6 +43,7 @@ def batch_processing_example(confidence_threshold, image_folder, output_file, mo
     system = RockCuttingsIdentificationSystem(model_path, confidence_threshold)
     
     if os.path.exists(image_folder):
+
         results = system.batch_identify(image_folder, output_file)
         
         print(f"\n处理完成，共处理 {len(results)} 张图像")
@@ -82,11 +84,10 @@ if __name__ == "__main__":
     # 运行示例
     args = {
         "confidence_threshold": 0.2,
-        #"image_path": "C:/Users/28162/Desktop/Rock_cuttings_identification_system/val/Purplish-red mudstone.webp",
-        #"image_path": "H:/dataset/深灰色粉砂质泥岩/A/1352.00-深灰色粉砂质泥岩-悦84井-庆阳仪器-白光-小视野.webp",
-        "image_path": "C:/Users/28162/Desktop/Rock_cuttings_identification_system/resized_image_0.5.jpg",
-        "image_folder": "path/to/your/image/folder",
-        "model_path": "C:/Users/28162/Desktop/Rock_cuttings_identification_system/utils/MobileNet/model/train/cuttings_MobileNetV3.pth",
+        "image_path": "C:\\Users\\28162\\Desktop\\中石油课题\\picture\\picture1\\灰白色中砂岩\\1292.00-灰白色中砂岩-庆阳仪器-白光-小视野\\1.webp",
+        # "image_folder": "C:/Users/28162/Desktop/test/深灰色泥岩",
+        "model_path": "C:/Users/28162/Desktop/中石油课题/Cutting-Edge-Digital-Cuttings-Recognition-Technology-Development-for-Logging/MobileNet/model/train/cuttings_MobileNetV3_cluster_30.pth",
+        "output_file": "C:/Users/28162/Desktop/Rock_cuttings_identification_system/demo_results_深灰色泥岩.txt"
     }
 
     single_image_example(args["image_path"], args["model_path"], args["confidence_threshold"])

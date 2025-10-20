@@ -21,8 +21,14 @@ class MobileNetV3Detect():
         
         # 岩性类别名称（示例，实际使用时需要根据训练数据调整）
         self.class_names = [
-            '深灰色泥岩', '深灰色粉砂质泥岩', '灰绿色泥岩', '灰色泥质粉砂岩', 
-            '浅灰色中砂岩','灰白色中砂岩', '紫红色泥岩'
+            "灰白色中砂岩",
+            "灰绿色泥岩",
+            "灰色泥质粉砂岩",
+            "其他",
+            "浅灰色中砂岩",
+            "深灰色粉砂质泥岩",
+            "深灰色泥岩",
+            "紫红色泥岩"
         ]
         # 加载模型
         self.model = self._load_model()
@@ -53,8 +59,8 @@ class MobileNetV3Detect():
 
         # 数据变换
         data_transform = transforms.Compose([
-            transforms.Resize(256),
-            transforms.CenterCrop(224),
+            transforms.Resize(640),
+            transforms.CenterCrop(640),
             transforms.ToTensor(),
             transforms.Normalize([0.485, 0.456, 0.406], 
                                 [0.229, 0.224, 0.225])
